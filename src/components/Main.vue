@@ -35,7 +35,7 @@ export default {
       background: '#96ce54',
       strokeStyle: '#000',
       fillStyle: '#000',
-      FONT: '120px Georgia',
+      fontFamily: '120px Georgia',
       fontStyle: '#9b4400',
       WIDTH: 0,
       HEIGHT: 0,
@@ -96,7 +96,8 @@ export default {
     initContext() {
       this.ctx.strokeStyle = this.strokeStyle;
       this.ctx.fillStyle = this.fillStyle;
-      this.ctx.font = this.FONT;
+      this.ctx.fontFamily = this.fontFamily;
+      this.ctx.fontSize = this.HEIGHT_UNIT + 'px';
       return this.ctx;
     },
     initHeader() {
@@ -104,8 +105,10 @@ export default {
       header.style.height = this.HEIGHT_UNIT * 2 + 'px';
       let info = this.$refs.info;
       info.style.height = this.HEIGHT_UNIT + 'px';
+      info.style.fontSize = this.HEIGHT_UNIT + 'px';
       let complete = this.$refs.complete;
       complete.style.height = this.HEIGHT_UNIT + 'px';
+      complete.style.fontSize = this.HEIGHT_UNIT + 'px';
     },
     initController() {
       let controller = this.$refs.controller;
@@ -280,10 +283,12 @@ export default {
 }
 .header .info {
   justify-content: space-between;
-  font: bold 72px "YaHei";
+  font-weight: bold;
+  font-family:  "YaHei";
 }
 .header .complete {
-  font: italic 64px "YaHei";
+  font-style: italic;
+  font-family: "YaHei";
   color: #4b5cc4;
 }
 .controller {
