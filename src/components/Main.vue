@@ -64,8 +64,8 @@ export default {
       stages: [
         ['A', 'D', 'S'],
         ['A', 'B', 'T', 'O'],
-        ['C', 'O', 'S', 'T', 'A'],
-        ['N', 'B', 'W', 'S', 'K', 'E']
+        ['A', 'O', 'S', 'T', 'C'],
+        ['A', 'B', 'W', 'S', 'K', 'E']
       ],
       completeWords: [],
       letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
@@ -190,8 +190,9 @@ export default {
       for (let x = 0; x <= 8; x++) {
         for (let y = 3; y <= 14; y++) {
           let letters = this.stages[this.stage - 1];
+          let i = x % 3 == 0 ? 0 : Math.floor(letters.length * Math.random());
           this.data.push({
-            letter: letters[Math.floor(letters.length * Math.random())],
+            letter: letters[i],
             x: x,
             y: y
           });
@@ -222,6 +223,16 @@ export default {
             }, 1500);
           } else {
             this.text = `All stages clear!`;
+            setTimeout(_ => {
+              let info = [];
+              this.scores.forEach((s, i) => {
+                info.push({
+                  stage: `第${i + 1}关`,
+                  score: `${s}分`
+                });
+              });
+              this.text = info;
+            }, 1000);
           }
         }
       } else {
@@ -247,6 +258,16 @@ export default {
               }, 1500);
             } else {
               this.text = `All stages clear!`;
+              setTimeout(_ => {
+                let info = [];
+                this.scores.forEach((s, i) => {
+                  info.push({
+                    stage: `第${i + 1}关`,
+                    score: `${s}分`
+                  });
+                });
+                this.text = info;
+              }, 1000);
             }
           }
         }
