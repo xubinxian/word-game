@@ -185,8 +185,8 @@ export default {
       this.scores[this.stage - 1] = this.score;
       this.score = 0;
       this.total = parseInt(this.ALL + '');
-      this.xi = Math.floor(8 * Math.random());
-      this.yi = 2 + Math.floor(12 * Math.random());
+      this.xi = Math.floor(9 * Math.random());
+      this.yi = 3 + Math.floor(13 * Math.random());
       for (let x = 0; x <= 8; x++) {
         for (let y = 3; y <= 14; y++) {
           let letters = this.stages[this.stage - 1];
