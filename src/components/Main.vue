@@ -35,7 +35,7 @@ export default {
       background: '#96ce54',
       strokeStyle: '#000',
       fillStyle: '#000',
-      fontFamily: '120px Georgia',
+      fontFamily: 'Georgia',
       fontStyle: '#9b4400',
       WIDTH: 0,
       HEIGHT: 0,
@@ -96,8 +96,8 @@ export default {
     initContext() {
       this.ctx.strokeStyle = this.strokeStyle;
       this.ctx.fillStyle = this.fillStyle;
-      this.ctx.fontFamily = this.fontFamily;
-      this.ctx.fontSize = this.HEIGHT_UNIT + 'px';
+      let fontSize = this.HEIGHT_UNIT / 2 + 'px';
+      this.ctx.font = `bold ${fontSize} ${this.fontFamily}`;
       return this.ctx;
     },
     initHeader() {
@@ -105,10 +105,10 @@ export default {
       header.style.height = this.HEIGHT_UNIT * 2 + 'px';
       let info = this.$refs.info;
       info.style.height = this.HEIGHT_UNIT + 'px';
-      info.style.fontSize = this.HEIGHT_UNIT + 'px';
+      info.style.fontSize = this.HEIGHT_UNIT / 4 + 'px';
       let complete = this.$refs.complete;
       complete.style.height = this.HEIGHT_UNIT + 'px';
-      complete.style.fontSize = this.HEIGHT_UNIT + 'px';
+      complete.style.fontSize = this.HEIGHT_UNIT / 4 + 'px';
     },
     initController() {
       let controller = this.$refs.controller;
@@ -306,7 +306,7 @@ export default {
 }
 
 .controller img {
-  width: 100%;
+  width: 50%;
 }
 
 .controller img:hover {
@@ -323,7 +323,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font: bold 160px "YaHei";
+  font: bold 30px "YaHei";
   color: #000;
 }
 </style>
