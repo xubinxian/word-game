@@ -82,15 +82,19 @@ export default {
       this.initWord();
     },
     fullscreen() {
-      let ele = document;
-      if (ele.requestFullscreen) {
-        ele.requestFullscreen();
-      } else if (ele.mozRequestFullScreen) {
-        ele.mozRequestFullScreen();
-      } else if (ele.webkitRequestFullscreen) {
-        ele.webkitRequestFullscreen();
-      } else if (ele.msRequestFullscreen) {
-        ele.msRequestFullscreen();
+      var el = document.documentElement;
+      var rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullScreen;
+
+      //typeof rfs != "undefined" && rfs
+      if (rfs) {
+        rfs.call(el);
+      }
+      else if (typeof window.ActiveXObject !== "undefined") {
+        //for IE，这里其实就是模拟了按下键盘的F11，使浏览器全屏
+        var wscript = new ActiveXObject("WScript.Shell");
+        if (wscript != null) {
+          wscript.SendKeys("{F11}");
+        }
       }
     },
     initCanvas() {
@@ -243,7 +247,7 @@ export default {
       }
     },
     animate() {
-      this.an = setInterval(this.render, 500);
+      this.an = setInterval(this.render, 800);
       this.render();
     },
     render() {
