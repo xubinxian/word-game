@@ -42,8 +42,8 @@ export default {
       fillStyle: '#000',
       fontFamily: 'Georgia',
       fontStyle: '#666',
-      fontHighLightStyle: '#fff',
-      fontComleteStyle: '#ff0',
+      fontHighLightStyle: '#f0f',
+      fontComleteStyle: '#f00',
       WIDTH: 0,
       HEIGHT: 0,
       WIDTH_UNIT: 0,
@@ -64,7 +64,7 @@ export default {
       stages: [
         ['A', 'D', 'S'],
         ['A', 'B', 'T', 'O'],
-        ['A', 'O', 'S', 'T', 'C'],
+        ['A', 'O', 'S', 'K', 'C'],
         ['A', 'B', 'W', 'S', 'K', 'E']
       ],
       completeWords: [],
@@ -81,7 +81,7 @@ export default {
         dict.forEach(d => {
           let key = d.substring(0, d.indexOf(' '));
           let value = d.substring(d.lastIndexOf(' ') + 1);
-          if (key.length <= 12 && key.length > 1) {
+          if (key.length <= 6 && key.length > 1) {
             json[key] = value;
           }
         });
@@ -179,14 +179,14 @@ export default {
       !notCheck && this.checkScore();
     },
     loadStage() {
-      this.score = 0;
       this.complete = '';
       this.data = [];
       this.completeWords = [];
-      this.scores[this.stage - 0] = this.score;
+      this.scores[this.stage - 1] = this.score;
+      this.score = 0;
       this.total = parseInt(this.ALL + '');
-      this.xi = Math.floor(9 * Math.random());
-      this.yi = 2 + Math.floor(13 * Math.random());
+      this.xi = Math.floor(8 * Math.random());
+      this.yi = 2 + Math.floor(12 * Math.random());
       for (let x = 0; x <= 8; x++) {
         for (let y = 3; y <= 14; y++) {
           let letters = this.stages[this.stage - 1];
@@ -204,7 +204,7 @@ export default {
       let rows = this.data.filter(d => d.x >= this.xi && d.y == this.yi);
       let isComplete = this.checkWord(rows);
       if (isComplete) {
-        if (this.total >= this.stage * 20) {
+        if (this.total >= this.ALL * (10 - this.stage) / 10) {
           setTimeout(_ => {
             let letter = this.data.filter(d => d.letter)[0];
             this.xi = letter.x;
@@ -239,7 +239,7 @@ export default {
         let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
         isComplete = this.checkWord(cols);
         if (isComplete) {
-          if (this.total >= this.ALL * this.stage / 5) {
+          if (this.total >= this.ALL * (10 - this.stage) / 10) {
             setTimeout(_ => {
               let letter = this.data.filter(d => d.letter)[0];
               this.xi = letter.x;
@@ -378,7 +378,7 @@ export default {
 }
 .header .complete {
   font-family: "YaHei";
-  color: #4b5cc4;
+  color: #f0f;
 }
 .controller {
   position: fixed;
