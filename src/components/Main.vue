@@ -2,8 +2,8 @@
   <div class="main-wrapper">
     <div ref="header" class="header">
       <div ref="info" class="info">
-        <div style="margin-left: 20px">STAGE: {{stage}}</div>
-        <div style="margin-right: 20px">SCORE: {{score}}</div>
+        <div style="margin-left: 20px">stage: {{stage}}</div>
+        <div style="margin-right: 20px">score: {{score}}</div>
       </div>
       <div ref="complete" class="complete">
         <div style="margin-left: 20px"></div>
@@ -21,34 +21,42 @@
         <img class="td" :src="arrowSrc" @click="toDown" />
       </div>
     </div>
-    <div ref="modal" class="modal">{{text}}</div>
+    <div ref="modal" class="modal">
+      <div class="title">{{text}}</div>
+      <div v-if="showScores" style="width: 100%">
+        <div class="score" v-for="s in scores" :key="s.stage">
+          <div>{{s.stage}}</div>
+          <div>{{s.score}}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-
-import '@/assets/common.css'
-import arrow from '@/assets/arrow.svg'
-import dict from '@/common/dict';
+import "@/assets/common.css";
+import arrow from "@/assets/arrow.svg";
+import dict from "@/common/dict";
 
 export default {
-  name: 'Main',
+  name: "Main",
   data() {
     return {
       ctx: null,
       an: null,
-      background: '#233',
-      strokeStyle: '#000',
-      fillStyle: '#000',
-      fontFamily: 'Georgia',
-      fontStyle: '#666',
-      fontHighLightStyle: '#f0f',
-      fontComleteStyle: '#f00',
+      background: "#222",
+      strokeStyle: "#000",
+      fillStyle: "#000",
+      fontFamily: "Georgia",
+      fontStyle: "#666",
+      fontHighLightStyle: "#f0f",
+      fontComleteStyle: "#f0f",
       WIDTH: 0,
       HEIGHT: 0,
       WIDTH_UNIT: 0,
       HEIGHT_UNIT: 0,
       arrowSrc: arrow,
+      showScores: true,
       score: 0,
       scores: [],
       xi: 0,
@@ -62,14 +70,41 @@ export default {
       ALL: 108,
       lock: false,
       stages: [
-        ['A', 'D', 'S'],
-        ['A', 'B', 'T', 'O'],
-        ['A', 'O', 'S', 'K', 'C'],
-        ['A', 'B', 'W', 'S', 'K', 'E']
+        ["A", "D", "S"],
+        ["A", "B", "E", "R"],
+        ["A", "B", "E", "T", "L"],
+        ["A", "B", "E", "R", "S", "T"]
       ],
       completeWords: [],
-      letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    }
+      letters: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z"
+      ]
+    };
   },
   mounted() {
     this.init();
@@ -79,8 +114,8 @@ export default {
       let json = {};
       if (dict) {
         dict.forEach(d => {
-          let key = d.substring(0, d.indexOf(' '));
-          let value = d.substring(d.lastIndexOf(' ') + 1);
+          let key = d.substring(0, d.indexOf(" "));
+          let value = d.substring(d.lastIndexOf(" ") + 1);
           if (key.length <= 6 && key.length > 1) {
             json[key] = value;
           }
@@ -98,7 +133,7 @@ export default {
     },
     initCanvas() {
       let canvas = this.$refs.canvas;
-      this.ctx = canvas.getContext('2d');
+      this.ctx = canvas.getContext("2d");
       canvas.style.background = this.background;
       this.WIDTH = document.body.clientWidth;
       this.HEIGHT = document.body.clientHeight;
@@ -110,48 +145,46 @@ export default {
     initContext() {
       this.ctx.strokeStyle = this.strokeStyle;
       this.ctx.fillStyle = this.fillStyle;
-      let fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
+      let fontSize = this.HEIGHT_UNIT * 0.8 + "px";
       this.ctx.font = `bold ${fontSize} ${this.fontFamily}`;
       return this.ctx;
     },
     initHeader() {
       let header = this.$refs.header;
-      header.style.height = this.HEIGHT_UNIT * 2 + 'px';
+      header.style.height = this.HEIGHT_UNIT * 2 + "px";
       let info = this.$refs.info;
-      info.style.height = this.HEIGHT_UNIT + 'px';
-      info.style.fontSize = this.HEIGHT_UNIT * 0.6 + 'px';
+      info.style.height = this.HEIGHT_UNIT + "px";
+      info.style.fontSize = this.HEIGHT_UNIT * 0.6 + "px";
       let complete = this.$refs.complete;
-      complete.style.height = this.HEIGHT_UNIT + 'px';
-      complete.style.fontSize = this.HEIGHT_UNIT * 0.6 + 'px';
+      complete.style.height = this.HEIGHT_UNIT + "px";
+      complete.style.fontSize = this.HEIGHT_UNIT * 0.6 + "px";
     },
     initController() {
       let controller = this.$refs.controller;
-      controller.style.height = this.HEIGHT_UNIT * 2 + 'px';
+      controller.style.height = this.HEIGHT_UNIT * 2 + "px";
       controller.style.bottom = 0;
 
       let left = this.$refs.l;
-      left.style.width = this.WIDTH_UNIT * 1.5 + 'px';
-      left.style.height = '100%';
+      left.style.width = this.WIDTH_UNIT * 1.5 + "px";
+      left.style.height = "100%";
 
       let right = this.$refs.r;
-      right.style.width = this.WIDTH_UNIT * 1.5 + 'px';
-      right.style.height = '100%';
+      right.style.width = this.WIDTH_UNIT * 1.5 + "px";
+      right.style.height = "100%";
     },
     initModal() {
       let modal = this.$refs.modal;
-      modal.style.height = this.HEIGHT_UNIT * 4 + 'px';
-      modal.style.top = this.HEIGHT_UNIT * 6 + 'px';
-      modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
-      modal.style.background = 'rgba(0,0,0,.25)';
+      modal.style.height = this.HEIGHT_UNIT * 4 + "px";
+      modal.style.top = this.HEIGHT_UNIT * 6 + "px";
+      modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + "px";
       setTimeout(_ => {
-        this.text = 2
+        this.text = 2;
         setTimeout(_ => {
-          this.text = 1
+          this.text = 1;
           setTimeout(_ => {
-            this.text = 'GO!'
+            this.text = "GO!";
             setTimeout(() => {
-              this.text = '';
-              modal.style.background = 'rgba(0,0,0,0)';
+              this.text = "";
               this.loadStage();
             }, 1000);
           }, 1000);
@@ -179,14 +212,13 @@ export default {
       !notCheck && this.checkScore();
     },
     loadStage() {
-      this.complete = '';
+      this.complete = "";
       this.data = [];
       this.completeWords = [];
-      this.scores[this.stage - 1] = this.score;
       this.score = 0;
-      this.total = parseInt(this.ALL + '');
-      this.xi = Math.floor(9 * Math.random());
-      this.yi = 3 + Math.floor(13 * Math.random());
+      this.total = parseInt(this.ALL + "");
+      this.xi = Math.floor(8 * Math.random());
+      this.yi = 3 + Math.floor(12 * Math.random());
       for (let x = 0; x <= 8; x++) {
         for (let y = 3; y <= 14; y++) {
           let letters = this.stages[this.stage - 1];
@@ -202,80 +234,56 @@ export default {
     },
     checkScore() {
       let rows = this.data.filter(d => d.x >= this.xi && d.y == this.yi);
-      let isComplete = this.checkWord(rows);
-      if (isComplete) {
-        if (this.total >= this.ALL * (10 - this.stage) / 10) {
+      let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
+      if (this.checkWord(rows)) {
+        this.doScore();
+      } else if (this.checkWord(cols)) {
+        this.doScore();
+      }
+    },
+    doScore() {
+      if (this.total >= this.ALL * 0.35) {
+        setTimeout(_ => {
+          let letter = this.data.filter(d => d.letter)[0];
+          this.xi = letter.x;
+          this.yi = letter.y;
+          this.loadData();
+        }, 1500);
+      } else {
+        if (this.stage < this.stages.length) {
+          this.text = `Stage ${this.stage} clear!`;
+          this.scores[this.stage - 1] = this.score;
+          console.log(this.scores);
           setTimeout(_ => {
-            let letter = this.data.filter(d => d.letter)[0];
-            this.xi = letter.x;
-            this.yi = letter.y;
-            this.loadData();
+            this.stage++;
+            this.loadStage();
+            this.text = "";
           }, 1500);
         } else {
-          this.$refs.modal.style.background = 'rgba(0,0,0,.25)';
-          if (this.stage < this.stages.length - 1) {
-            this.text = `Stage ${this.stage} clear!`;
-            setTimeout(_ => {
-              this.stage++;
-              this.loadStage();
-              this.text = '';
-              this.$refs.modal.style.background = 'rgba(0,0,0,.0)';
-            }, 1500);
-          } else {
-            this.text = `All stages clear!`;
-            setTimeout(_ => {
-              let info = [];
-              this.scores.forEach((s, i) => {
-                info.push({
-                  stage: `第${i + 1}关`,
-                  score: `${s}分`
-                });
+          this.scores[this.stage - 1] = this.score;
+          this.complete = "";
+          this.text = `All stages clear!`;
+          setTimeout(_ => {
+            let info = [];
+            console.log(this.scores);
+            for (let i = 0; i < this.scores.length; i++) {
+              info.push({
+                stage: `第${i + 1}关`,
+                score: `${this.scores[i]}分`
               });
-              this.text = info;
-            }, 1000);
-          }
-        }
-      } else {
-        let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
-        isComplete = this.checkWord(cols);
-        if (isComplete) {
-          if (this.total >= this.ALL * (10 - this.stage) / 10) {
-            setTimeout(_ => {
-              let letter = this.data.filter(d => d.letter)[0];
-              this.xi = letter.x;
-              this.yi = letter.y;
-              this.loadData();
-            }, 1500);
-          } else {
-            this.$refs.modal.style.background = 'rgba(0,0,0,.25)';
-            if (this.stage < this.stages.length - 1) {
-              this.text = `Stage ${this.stage} clear!`;
-              setTimeout(_ => {
-                this.stage++;
-                this.loadStage();
-                this.text = '';
-                this.$refs.modal.style.background = 'rgba(0,0,0,.0)';
-              }, 1500);
-            } else {
-              this.text = `All stages clear!`;
-              setTimeout(_ => {
-                let info = [];
-                this.scores.forEach((s, i) => {
-                  info.push({
-                    stage: `第${i + 1}关`,
-                    score: `${s}分`
-                  });
-                });
-                this.text = info;
-              }, 1000);
             }
-          }
+            this.scores = info;
+            this.showScores = true;
+            this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
+          }, 1000);
         }
       }
     },
     checkWord(letters) {
       let isComplete;
-      let word = letters.map(l => l.letter && l.letter.toLowerCase() || '1').join('');
+      let word = letters
+        .map(l => (l.letter && l.letter.toLowerCase()) || "1")
+        .join("");
       for (let key in this.dictJson) {
         let index = word.indexOf(key);
         if (index == 0) {
@@ -295,20 +303,24 @@ export default {
           for (let i = 0; i < this.data.length; i++) {
             let d = this.data[i];
             if (d.letter == l.letter && d.x == l.x && d.y == l.y) {
-              d.letter = '';
+              d.letter = "";
               this.total--;
             }
           }
         });
         this.lock = false;
         this.score += letters.length;
-        console.log('TOTAL', this.total);
+        console.log("TOTAL", this.total);
       }, 1000);
     },
     toLeft() {
       if (this.xi > 0 && !this.lock) {
-        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
-        let target = this.data.filter(d => d.x == this.xi - 1 && d.y == this.yi)[0];
+        let selected = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi
+        )[0];
+        let target = this.data.filter(
+          d => d.x == this.xi - 1 && d.y == this.yi
+        )[0];
         selected.x--;
         target.x++;
         this.xi--;
@@ -317,8 +329,12 @@ export default {
     },
     toRight() {
       if (this.xi < 8 && !this.lock) {
-        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
-        let target = this.data.filter(d => d.x == this.xi + 1 && d.y == this.yi)[0];
+        let selected = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi
+        )[0];
+        let target = this.data.filter(
+          d => d.x == this.xi + 1 && d.y == this.yi
+        )[0];
         selected.x++;
         target.x--;
         this.xi++;
@@ -327,8 +343,12 @@ export default {
     },
     toUp() {
       if (this.yi > 3 && !this.lock) {
-        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
-        let target = this.data.filter(d => d.x == this.xi && d.y == this.yi - 1)[0];
+        let selected = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi
+        )[0];
+        let target = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi - 1
+        )[0];
         selected.y--;
         target.y++;
         this.yi--;
@@ -337,8 +357,12 @@ export default {
     },
     toDown() {
       if (this.yi < 14 && !this.lock) {
-        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
-        let target = this.data.filter(d => d.x == this.xi && d.y == this.yi + 1)[0];
+        let selected = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi
+        )[0];
+        let target = this.data.filter(
+          d => d.x == this.xi && d.y == this.yi + 1
+        )[0];
         selected.y++;
         target.y--;
         this.yi++;
@@ -346,7 +370,7 @@ export default {
       }
     }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -408,10 +432,6 @@ export default {
   transform: rotate(180deg);
 }
 
-.controller .r {
-  flex-direction: column;
-}
-
 .controller .r .tu {
   transform: rotate(-90deg);
 }
@@ -424,10 +444,19 @@ export default {
   position: fixed;
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-family: "YaHei";
   color: #fff;
+}
+
+.modal .score {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 40px;
 }
 </style>
