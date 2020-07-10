@@ -101,8 +101,8 @@ export default {
       let canvas = this.$refs.canvas;
       this.ctx = canvas.getContext('2d');
       canvas.style.background = this.background;
-      this.WIDTH = screen.availWidth;
-      this.HEIGHT = screen.availHeight;
+      this.WIDTH = document.body.clientWidth;
+      this.HEIGHT = document.body.clientHeight;
       canvas.width = this.WIDTH;
       canvas.height = this.HEIGHT;
       console.log('WIDTH', this.WIDTH, 'HEIGHT', this.HEIGHT);
