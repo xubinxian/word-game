@@ -32,11 +32,11 @@ export default {
     return {
       ctx: null,
       an: null,
-      background: '#96ce54',
+      background: '#233',
       strokeStyle: '#000',
       fillStyle: '#000',
       fontFamily: 'Georgia',
-      fontStyle: '#9b4400',
+      fontStyle: '#fff',
       WIDTH: 0,
       HEIGHT: 0,
       WIDTH_UNIT: 0,
@@ -74,11 +74,24 @@ export default {
   },
   methods: {
     init() {
+      this.fullscreen();
       this.initCanvas();
       this.initModal();
       this.initHeader();
       this.initController();
       this.initWord();
+    },
+    fullscreen() {
+      let ele = document;
+      if (ele.requestFullscreen) {
+        ele.requestFullscreen();
+      } else if (ele.mozRequestFullScreen) {
+        ele.mozRequestFullScreen();
+      } else if (ele.webkitRequestFullscreen) {
+        ele.webkitRequestFullscreen();
+      } else if (ele.msRequestFullscreen) {
+        ele.msRequestFullscreen();
+      }
     },
     initCanvas() {
       let canvas = this.$refs.canvas;
@@ -96,7 +109,7 @@ export default {
     initContext() {
       this.ctx.strokeStyle = this.strokeStyle;
       this.ctx.fillStyle = this.fillStyle;
-      let fontSize = this.HEIGHT_UNIT / 2 + 'px';
+      let fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
       this.ctx.font = `bold ${fontSize} ${this.fontFamily}`;
       return this.ctx;
     },
@@ -105,10 +118,13 @@ export default {
       header.style.height = this.HEIGHT_UNIT * 2 + 'px';
       let info = this.$refs.info;
       info.style.height = this.HEIGHT_UNIT + 'px';
-      info.style.fontSize = this.HEIGHT_UNIT / 4 + 'px';
+      info.style.fontSize = this.HEIGHT_UNIT * 0.6 + 'px';
       let complete = this.$refs.complete;
       complete.style.height = this.HEIGHT_UNIT + 'px';
-      complete.style.fontSize = this.HEIGHT_UNIT / 4 + 'px';
+      complete.style.fontSize = this.HEIGHT_UNIT * 0.6 + 'px';
+      let modal = this.$refs.modal;
+      modal.style.height = this.HEIGHT_UNIT + 'px';
+      modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
     },
     initController() {
       let controller = this.$refs.controller;
@@ -227,7 +243,7 @@ export default {
       }
     },
     animate() {
-      this.an = setInterval(this.render, 200);
+      this.an = setInterval(this.render, 500);
       this.render();
     },
     render() {
@@ -284,10 +300,9 @@ export default {
 .header .info {
   justify-content: space-between;
   font-weight: bold;
-  font-family:  "YaHei";
+  font-family: "YaHei";
 }
 .header .complete {
-  font-style: italic;
   font-family: "YaHei";
   color: #4b5cc4;
 }
@@ -323,7 +338,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font: bold 30px "YaHei";
-  color: #000;
+  font-weight: bold;
+  font-family: "YaHei";
+  color: #fff;
 }
 </style>
