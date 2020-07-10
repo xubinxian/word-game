@@ -2,18 +2,23 @@
   <div class="main-wrapper">
     <div ref="header" class="header">
       <div ref="info" class="info">
-        <div style="margin-left: 20px">LETTER: {{letter}}</div>
+        <div style="margin-left: 20px">STAGE: {{stage}}</div>
         <div style="margin-right: 20px">SCORE: {{score}}</div>
       </div>
-      <div ref="complete" class="complete">{{complete}}</div>
+      <div ref="complete" class="complete">
+        <div style="margin-left: 20px"></div>
+        <div style="margin-right: 20px">{{complete}}</div>
+      </div>
     </div>
     <canvas ref="canvas">Ah! Are you ok ?</canvas>
     <div ref="controller" class="controller">
       <div ref="l" class="l">
-        <img :src="imgSrc" @click="toLeft" />
+        <img class="tl" :src="arrowSrc" @click="toLeft" />
+        <img class="tr" :src="arrowSrc" @click="toRight" />
       </div>
       <div ref="r" class="r">
-        <img :src="imgSrc" @click="toRight" />
+        <img class="tu" :src="arrowSrc" @click="toUp" />
+        <img class="td" :src="arrowSrc" @click="toDown" />
       </div>
     </div>
     <div ref="modal" class="modal">{{text}}</div>
@@ -23,7 +28,7 @@
 <script>
 
 import '@/assets/common.css'
-import img from '@/assets/arrow.svg'
+import arrow from '@/assets/arrow.svg'
 import dict from '@/common/dict';
 
 export default {
@@ -36,21 +41,33 @@ export default {
       strokeStyle: '#000',
       fillStyle: '#000',
       fontFamily: 'Georgia',
-      fontStyle: '#fff',
+      fontStyle: '#666',
+      fontHighLightStyle: '#fff',
+      fontComleteStyle: '#ff0',
       WIDTH: 0,
       HEIGHT: 0,
       WIDTH_UNIT: 0,
       HEIGHT_UNIT: 0,
-      imgSrc: img,
-      word: 'BUT',
+      arrowSrc: arrow,
       score: 0,
+      scores: [],
       xi: 0,
-      yi: 2,
-      letter: 'A',
+      yi: 0,
       complete: "",
       text: "3",
       min: 14,
       data: [],
+      stage: 1,
+      total: 0,
+      ALL: 108,
+      lock: false,
+      stages: [
+        ['A', 'D', 'S'],
+        ['A', 'B', 'T', 'O'],
+        ['C', 'O', 'S', 'T', 'A'],
+        ['N', 'B', 'W', 'S', 'K', 'E']
+      ],
+      completeWords: [],
       letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     }
   },
@@ -64,7 +81,7 @@ export default {
         dict.forEach(d => {
           let key = d.substring(0, d.indexOf(' '));
           let value = d.substring(d.lastIndexOf(' ') + 1);
-          if (key.length <= 5) {
+          if (key.length <= 12 && key.length > 1) {
             json[key] = value;
           }
         });
@@ -74,28 +91,10 @@ export default {
   },
   methods: {
     init() {
-      this.fullscreen();
       this.initCanvas();
       this.initModal();
       this.initHeader();
       this.initController();
-      this.initWord();
-    },
-    fullscreen() {
-      var el = document.documentElement;
-      var rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullScreen;
-
-      //typeof rfs != "undefined" && rfs
-      if (rfs) {
-        rfs.call(el);
-      }
-      else if (typeof window.ActiveXObject !== "undefined") {
-        //for IE，这里其实就是模拟了按下键盘的F11，使浏览器全屏
-        var wscript = new ActiveXObject("WScript.Shell");
-        if (wscript != null) {
-          wscript.SendKeys("{F11}");
-        }
-      }
     },
     initCanvas() {
       let canvas = this.$refs.canvas;
@@ -105,10 +104,8 @@ export default {
       this.HEIGHT = document.body.clientHeight;
       canvas.width = this.WIDTH;
       canvas.height = this.HEIGHT;
-      console.log('WIDTH', this.WIDTH, 'HEIGHT', this.HEIGHT);
       this.WIDTH_UNIT = this.WIDTH / 9;
       this.HEIGHT_UNIT = this.HEIGHT / 16;
-      console.log('WIDTH_UNIT', this.WIDTH_UNIT, 'HEIGHT_UNIT', this.HEIGHT_UNIT);
     },
     initContext() {
       this.ctx.strokeStyle = this.strokeStyle;
@@ -126,9 +123,6 @@ export default {
       let complete = this.$refs.complete;
       complete.style.height = this.HEIGHT_UNIT + 'px';
       complete.style.fontSize = this.HEIGHT_UNIT * 0.6 + 'px';
-      let modal = this.$refs.modal;
-      modal.style.height = this.HEIGHT_UNIT + 'px';
-      modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
     },
     initController() {
       let controller = this.$refs.controller;
@@ -138,17 +132,17 @@ export default {
       let left = this.$refs.l;
       left.style.width = this.WIDTH_UNIT * 1.5 + 'px';
       left.style.height = '100%';
-      left.style.marginLeft = this.WIDTH_UNIT + 'px';
 
       let right = this.$refs.r;
       right.style.width = this.WIDTH_UNIT * 1.5 + 'px';
       right.style.height = '100%';
-      right.style.marginRight = this.WIDTH_UNIT + 'px';
     },
     initModal() {
       let modal = this.$refs.modal;
       modal.style.height = this.HEIGHT_UNIT * 4 + 'px';
       modal.style.top = this.HEIGHT_UNIT * 6 + 'px';
+      modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + 'px';
+      modal.style.background = 'rgba(0,0,0,.25)';
       setTimeout(_ => {
         this.text = 2
         setTimeout(_ => {
@@ -157,123 +151,178 @@ export default {
             this.text = 'GO!'
             setTimeout(() => {
               this.text = '';
-              this.animate();
+              modal.style.background = 'rgba(0,0,0,0)';
+              this.loadStage();
             }, 1000);
           }, 1000);
         }, 1000);
       }, 1000);
     },
-    initWord(xi, yi, letter) {
+    drawWord(xi, yi, letter, fontStyle) {
       let ctx = this.initContext();
-      ctx.fillStyle = this.fontStyle;
-      xi = xi || this.xi;
-      yi = yi || this.yi;
-      letter = letter || this.letter;
+      ctx.fillStyle = fontStyle || this.fontStyle;
       ctx.fillText(letter, this.WIDTH_UNIT * xi, this.HEIGHT_UNIT * yi);
     },
-    loadData() {
+    loadData(notCheck) {
+      this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
+      this.data.sort((d1, d2) => d1.x - d2.x).sort((d1, d2) => d1.y - d2.y);
       this.data.forEach(d => {
-        this.initWord(d.x, d.y, d.letter);
+        let filter = this.completeWords.filter(w => w.x == d.x && w.y == d.y);
+        if (filter.length) {
+          this.drawWord(d.x, d.y, d.letter, this.fontComleteStyle);
+        } else if (d.x == this.xi && d.y == this.yi) {
+          this.drawWord(d.x, d.y, d.letter, this.fontHighLightStyle);
+        } else {
+          this.drawWord(d.x, d.y, d.letter);
+        }
       });
+      !notCheck && this.checkScore();
     },
-    checkCollision() {
-      let isCollison;
-      for (let d of this.data) {
-        if (this.xi == d.x && this.yi + 1 == d.y) {
-          isCollison = true;
-          break;
+    loadStage() {
+      this.score = 0;
+      this.complete = '';
+      this.data = [];
+      this.completeWords = [];
+      this.scores[this.stage - 0] = this.score;
+      this.total = parseInt(this.ALL + '');
+      this.xi = Math.floor(9 * Math.random());
+      this.yi = 2 + Math.floor(13 * Math.random());
+      for (let x = 0; x <= 8; x++) {
+        for (let y = 3; y <= 14; y++) {
+          let letters = this.stages[this.stage - 1];
+          this.data.push({
+            letter: letters[Math.floor(letters.length * Math.random())],
+            x: x,
+            y: y
+          });
         }
       }
-      if (!isCollison) {
-        if (this.yi >= 14) {
-          isCollison = true;
-        }
-      }
-      return isCollison;
+      this.loadData();
     },
     checkScore() {
-      for (let i = parseInt(this.min); i <= 14; i++) {
-        let letters = this.data.filter(d => d.y == i);
-        for (let j = 0; j <= 8; j++) {
-          if (!letters.some(l => l.x == j)) {
-            letters.splice(j, 1, {
-              letter: '1',
-              x: i
-            });
+      let rows = this.data.filter(d => d.x >= this.xi && d.y == this.yi);
+      let isComplete = this.checkWord(rows);
+      if (isComplete) {
+        if (this.total >= this.stage * 20) {
+          setTimeout(_ => {
+            let letter = this.data.filter(d => d.letter)[0];
+            this.xi = letter.x;
+            this.yi = letter.y;
+            this.loadData();
+          }, 1500);
+        } else {
+          this.$refs.modal.style.background = 'rgba(0,0,0,.25)';
+          if (this.stage < this.stages.length - 1) {
+            this.text = `Stage ${this.stage} clear!`;
+            setTimeout(_ => {
+              this.stage++;
+              this.loadStage();
+              this.text = '';
+              this.$refs.modal.style.background = 'rgba(0,0,0,.0)';
+            }, 1500);
+          } else {
+            this.text = `All stages clear!`;
           }
         }
-        let isComplete = this.checkWord(letters);
+      } else {
+        let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
+        isComplete = this.checkWord(cols);
         if (isComplete) {
-          this.score += isComplete.length;
-          this.clearCompleteWord(isComplete);
+          if (this.total >= this.ALL * this.stage / 5) {
+            setTimeout(_ => {
+              let letter = this.data.filter(d => d.letter)[0];
+              this.xi = letter.x;
+              this.yi = letter.y;
+              this.loadData();
+            }, 1500);
+          } else {
+            this.$refs.modal.style.background = 'rgba(0,0,0,.25)';
+            if (this.stage < this.stages.length - 1) {
+              this.text = `Stage ${this.stage} clear!`;
+              setTimeout(_ => {
+                this.stage++;
+                this.loadStage();
+                this.text = '';
+                this.$refs.modal.style.background = 'rgba(0,0,0,.0)';
+              }, 1500);
+            } else {
+              this.text = `All stages clear!`;
+            }
+          }
         }
       }
     },
     checkWord(letters) {
       let isComplete;
-      let word = letters.map(l => l.letter.toLowerCase()).join('');
+      let word = letters.map(l => l.letter && l.letter.toLowerCase() || '1').join('');
       for (let key in this.dictJson) {
         let index = word.indexOf(key);
-        if (index > -1) {
-          isComplete = letters.slice().splice(index, key.length);
+        if (index == 0) {
+          this.completeWords = isComplete = letters.splice(index, key.length);
+          this.loadData(true);
           this.complete = `${key} ${this.dictJson[key]}`;
+          this.clearCompleteWord(isComplete);
           break;
         }
       }
       return isComplete;
     },
     clearCompleteWord(letters) {
-      let firstLetter = letters[0];
-      let index = -1;
-      for (let i = 0; i < this.data.length; i++) {
-        let d = this.data[i];
-        if (d.letter == firstLetter.letter && d.x == firstLetter.x && d.y == firstLetter.y) {
-          index = i;
-          break;
-        }
-      }
-      if (index > -1) {
-        this.data.splice(index, letters.length);
-      }
+      this.lock = true;
+      setTimeout(_ => {
+        letters.forEach(l => {
+          for (let i = 0; i < this.data.length; i++) {
+            let d = this.data[i];
+            if (d.letter == l.letter && d.x == l.x && d.y == l.y) {
+              d.letter = '';
+              this.total--;
+            }
+          }
+        });
+        this.lock = false;
+        this.score += letters.length;
+        console.log('TOTAL', this.total);
+      }, 1000);
     },
     toLeft() {
-      if (!this.checkCollision()) {
-        this.xi = this.xi > 0 ? this.xi - 1 : 0;
+      if (this.xi > 0 && !this.lock) {
+        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
+        let target = this.data.filter(d => d.x == this.xi - 1 && d.y == this.yi)[0];
+        selected.x--;
+        target.x++;
+        this.xi--;
+        this.loadData();
       }
     },
     toRight() {
-      if (!this.checkCollision()) {
-        this.xi = this.xi < 8 ? this.xi + 1 : 8;
+      if (this.xi < 8 && !this.lock) {
+        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
+        let target = this.data.filter(d => d.x == this.xi + 1 && d.y == this.yi)[0];
+        selected.x++;
+        target.x--;
+        this.xi++;
+        this.loadData();
       }
     },
-    animate() {
-      this.an = setInterval(this.render, 800);
-      this.render();
-    },
-    render() {
-      this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
-      if (!this.checkCollision()) {
-        this.initWord(this.xi, this.yi++);
-      } else {
-        this.data.push({
-          letter: this.letter + '',
-          x: this.xi + '',
-          y: this.yi + ''
-        });
-        this.min = this.min > this.yi ? this.yi + '' : this.min;
-        console.log(this.min);
-        this.checkScore();
-        if (this.yi != 3) {
-          this.letter = this.letters[Math.floor(this.letters.length * Math.random())];
-          this.xi = Math.floor(9 * Math.random());
-          this.yi = 3;
-          this.initWord();
-        } else {
-          this.text = 'Game Over!';
-          clearInterval(this.an);
-        }
+    toUp() {
+      if (this.yi > 3 && !this.lock) {
+        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
+        let target = this.data.filter(d => d.x == this.xi && d.y == this.yi - 1)[0];
+        selected.y--;
+        target.y++;
+        this.yi--;
+        this.loadData();
       }
-      this.loadData();
+    },
+    toDown() {
+      if (this.yi < 14 && !this.lock) {
+        let selected = this.data.filter(d => d.x == this.xi && d.y == this.yi)[0];
+        let target = this.data.filter(d => d.x == this.xi && d.y == this.yi + 1)[0];
+        selected.y++;
+        target.y--;
+        this.yi++;
+        this.loadData();
+      }
     }
   }
 }
@@ -322,18 +371,32 @@ export default {
 .controller div {
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .controller img {
-  width: 50%;
+  flex: 1;
+  height: 50%;
 }
 
 .controller img:hover {
-  transform: scale(1.05);
+  transform: scale(1.2);
 }
 
-.controller .l {
+.controller .l .tl {
   transform: rotate(180deg);
+}
+
+.controller .r {
+  flex-direction: column;
+}
+
+.controller .r .tu {
+  transform: rotate(-90deg);
+}
+
+.controller .r .td {
+  transform: rotate(90deg);
 }
 
 .modal {
