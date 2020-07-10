@@ -1,6 +1,7 @@
 # word-game
 
 > A game of spelling word.
+> https://xubinxian.github.io/word-game/
 
 ## Build Setup
 
