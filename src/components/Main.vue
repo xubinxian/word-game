@@ -2,12 +2,11 @@
   <div class="main-wrapper">
     <div ref="header" class="header">
       <div ref="info" class="info">
-        <div style="margin-left: 20px">stage: {{stage}}</div>
-        <div style="margin-right: 20px">score: {{score}}</div>
+        <div style="margin-left: 20px">关卡: {{stage}}</div>
+        <div style="margin-right: 20px">得分: {{score}}</div>
       </div>
       <div ref="complete" class="complete">
-        <div style="margin-left: 20px"></div>
-        <div style="margin-right: 20px">{{complete}}</div>
+        <div style="margin-right: 20px;overflow-y: auto;max-height: 100%;">{{complete}}</div>
       </div>
     </div>
     <canvas ref="canvas">Ah! Are you ok ?</canvas>
@@ -36,7 +35,7 @@
 <script>
 import "@/assets/common.css";
 import arrow from "@/assets/arrow.svg";
-import dict from "@/common/dict";
+import dict from "@/common/chengyu";
 
 export default {
   name: "Main",
@@ -49,8 +48,8 @@ export default {
       fillStyle: "#000",
       fontFamily: "Georgia",
       fontStyle: "#666",
-      fontHighLightStyle: "#f0f",
-      fontComleteStyle: "#f0f",
+      fontHighLightStyle: "#baec40",
+      fontComleteStyle: "#baec40",
       WIDTH: 0,
       HEIGHT: 0,
       WIDTH_UNIT: 0,
@@ -62,74 +61,57 @@ export default {
       xi: 0,
       yi: 0,
       complete: "",
-      text: "3",
       min: 14,
+      dictJson: {},
       data: [],
+      text: "成语消消乐",
       stage: 1,
-      total: 0,
       ALL: 108,
       lock: false,
       stages: [
-        ["A", "D", "S"],
-        ["A", "B", "E", "R"],
-        ["A", "B", "E", "T", "L"],
-        ["A", "B", "E", "R", "S", "T"]
+        { X: 4, Y: 4, W: 4 },
+        { X: 8, Y: 4, W: 8 },
+        { X: 8, Y: 6, W: 12 },
+        { X: 9, Y: 8, W: 18 },
+        { X: 8, Y: 12, W: 24 },
+        { X: 9, Y: 12, W: 108 }
       ],
+      words: [],
+      letters: [],
+      lettersFirst: [],
+      lettersFirstIndex: 0,
       completeWords: [],
-      letters: [
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "J",
-        "K",
-        "L",
-        "M",
-        "N",
-        "O",
-        "P",
-        "Q",
-        "R",
-        "S",
-        "T",
-        "U",
-        "V",
-        "W",
-        "X",
-        "Y",
-        "Z"
-      ]
+      X: 0,
+      Y: 3,
+      W: 0
     };
   },
   mounted() {
     this.init();
   },
-  computed: {
-    dictJson() {
-      let json = {};
-      if (dict) {
-        dict.forEach(d => {
-          let key = d.substring(0, d.indexOf(" "));
-          let value = d.substring(d.lastIndexOf(" ") + 1);
-          if (key.length <= 6 && key.length > 1) {
-            json[key] = value;
-          }
-        });
-      }
-      return json;
-    }
-  },
+  computed: {},
   methods: {
     init() {
       this.initCanvas();
       this.initModal();
       this.initHeader();
       this.initController();
+      this.initDict();
+    },
+    initDict() {
+      let json = {};
+      if (dict) {
+        dict.forEach(d => {
+          let key = d.substring(0, d.indexOf("拼"));
+          let value = d.substring(d.lastIndexOf("拼") + 1);
+          if (key.length == 4) {
+            this.words.push(key);
+            json[key] = value;
+          }
+        });
+      }
+      this.dictJson = json;
+      this.words = this.getRandom(this.words);
     },
     initCanvas() {
       let canvas = this.$refs.canvas;
@@ -154,10 +136,10 @@ export default {
       header.style.height = this.HEIGHT_UNIT * 2 + "px";
       let info = this.$refs.info;
       info.style.height = this.HEIGHT_UNIT + "px";
-      info.style.fontSize = this.HEIGHT_UNIT * 0.6 + "px";
+      info.style.fontSize = this.HEIGHT_UNIT * 0.4 + "px";
       let complete = this.$refs.complete;
       complete.style.height = this.HEIGHT_UNIT + "px";
-      complete.style.fontSize = this.HEIGHT_UNIT * 0.6 + "px";
+      complete.style.fontSize = this.HEIGHT_UNIT * 0.3 + "px";
     },
     initController() {
       let controller = this.$refs.controller;
@@ -178,18 +160,21 @@ export default {
       modal.style.top = this.HEIGHT_UNIT * 6 + "px";
       modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + "px";
       setTimeout(_ => {
-        this.text = 2;
+        this.text = 3;
         setTimeout(_ => {
-          this.text = 1;
+          this.text = 2;
           setTimeout(_ => {
-            this.text = "GO!";
-            setTimeout(() => {
-              this.text = "";
-              this.loadStage();
+            this.text = 1;
+            setTimeout(_ => {
+              this.text = "开始!";
+              setTimeout(() => {
+                this.text = "";
+                this.loadStage();
+              }, 1000);
             }, 1000);
           }, 1000);
         }, 1000);
-      }, 1000);
+      }, 2000);
     },
     drawWord(xi, yi, letter, fontStyle) {
       let ctx = this.initContext();
@@ -212,71 +197,103 @@ export default {
       !notCheck && this.checkScore();
     },
     loadStage() {
+      this.text = "";
       this.complete = "";
       this.data = [];
       this.completeWords = [];
       this.score = 0;
-      this.total = parseInt(this.ALL + "");
-      this.xi = Math.floor(8 * Math.random());
-      this.yi = 3 + Math.floor(12 * Math.random());
-      for (let x = 0; x <= 8; x++) {
-        for (let y = 3; y <= 14; y++) {
-          let letters = this.stages[this.stage - 1];
-          let i = x % 3 == 0 ? 0 : Math.floor(letters.length * Math.random());
+      this.lettersFirstIndex = 0;
+      let params = this.stages[this.stage - 1];
+      this.X = params.X - 1;
+      this.Y = params.Y + 2;
+      this.W = 4 * params.W;
+      this.letters = this.words.filter(
+        (w, i) => i >= 14 * params.W && i < 15 * params.W
+      );
+      this.lettersFirst = this.letters.map(l => l && l.substring(0, 1));
+      let letters = this.letters.join("").split("");
+      letters = this.getRandom(letters);
+      let i = 0;
+      for (let x = 0; x < params.X; x++) {
+        for (let y = 3; y < params.Y + 3; y++) {
           this.data.push({
             letter: letters[i],
             x: x,
             y: y
           });
+          i++;
         }
       }
+      this.getSelected();
       this.loadData();
     },
+    getSelected() {
+      if (this.lettersFirstIndex < this.lettersFirst.length) {
+        let letter = this.lettersFirst[this.lettersFirstIndex];
+        let l = this.data.filter(d => d.letter == letter)[0];
+        this.xi = l.x;
+        this.yi = l.y;
+        this.lettersFirstIndex++;
+      }
+    },
+    getRandom(arr) {
+      var len = arr.length;
+      //首先从最大的数开始遍历，之后递减
+      for (var i = len - 1; i >= 0; i--) {
+        //随机索引值randomIndex是从0-arr.length中随机抽取的
+        var randomIndex = Math.floor(Math.random() * (i + 1));
+        //下面三句相当于把从数组中随机抽取到的值与当前遍历的值互换位置
+        var itemIndex = arr[randomIndex];
+        arr[randomIndex] = arr[i];
+        arr[i] = itemIndex;
+      }
+      //每一次的遍历都相当于把从数组中随机抽取（不重复）的一个元素放到数组的最后面（索引顺序为：len-1,len-2,len-3......0）
+      return arr;
+    },
     checkScore() {
-      let rows = this.data.filter(d => d.x >= this.xi && d.y == this.yi);
-      let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
-      if (this.checkWord(rows)) {
-        this.doScore();
-      } else if (this.checkWord(cols)) {
-        this.doScore();
+      if (this.score < this.W) {
+        let rows = this.data.filter(d => d.x >= this.xi && d.y == this.yi);
+        let cols = this.data.filter(d => d.y >= this.yi && d.x == this.xi);
+        if (this.checkWord(rows)) {
+          this.doScore();
+        } else if (this.checkWord(cols)) {
+          this.doScore();
+        }
+      } else {
+        this.doFinish();
       }
     },
     doScore() {
-      if (this.total >= this.ALL * 0.35) {
+      setTimeout(_ => {
+        this.getSelected();
+        this.loadData();
+      }, 1500);
+    },
+    doFinish() {
+      if (this.stage < this.stages.length) {
+        this.text = `第${this.stage}关通过!`;
+        this.scores[this.stage - 1] = this.score;
         setTimeout(_ => {
-          let letter = this.data.filter(d => d.letter)[0];
-          this.xi = letter.x;
-          this.yi = letter.y;
-          this.loadData();
+          this.stage++;
+          this.loadStage();
+          this.text = "";
         }, 1500);
       } else {
-        if (this.stage < this.stages.length) {
-          this.text = `Stage ${this.stage} clear!`;
-          this.scores[this.stage - 1] = this.score;
-          console.log(this.scores);
-          setTimeout(_ => {
-            this.stage++;
-            this.loadStage();
-            this.text = "";
-          }, 1500);
-        } else {
-          this.scores[this.stage - 1] = this.score;
-          this.complete = "";
-          this.text = `All stages clear!`;
-          setTimeout(_ => {
-            let info = [];
-            console.log(this.scores);
-            for (let i = 0; i < this.scores.length; i++) {
-              info.push({
-                stage: `第${i + 1}关`,
-                score: `${this.scores[i]}分`
-              });
-            }
-            this.scores = info;
-            this.showScores = true;
-            this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
-          }, 1000);
-        }
+        this.scores[this.stage - 1] = this.score;
+        this.complete = "";
+        this.text = `恭喜!`;
+        setTimeout(_ => {
+          let info = [];
+          for (let i = 0; i < this.scores.length; i++) {
+            info.push({
+              stage: `第${i + 1}关`,
+              score: `${this.scores[i]}分`
+            });
+          }
+          this.scores = info;
+          this.showScores = true;
+          this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
+        }, 1000);
       }
     },
     checkWord(letters) {
@@ -304,13 +321,11 @@ export default {
             let d = this.data[i];
             if (d.letter == l.letter && d.x == l.x && d.y == l.y) {
               d.letter = "";
-              this.total--;
             }
           }
         });
         this.lock = false;
         this.score += letters.length;
-        console.log("TOTAL", this.total);
       }, 1000);
     },
     toLeft() {
@@ -328,7 +343,7 @@ export default {
       }
     },
     toRight() {
-      if (this.xi < 8 && !this.lock) {
+      if (this.xi < this.X && !this.lock) {
         let selected = this.data.filter(
           d => d.x == this.xi && d.y == this.yi
         )[0];
@@ -356,7 +371,7 @@ export default {
       }
     },
     toDown() {
-      if (this.yi < 14 && !this.lock) {
+      if (this.yi < this.Y && !this.lock) {
         let selected = this.data.filter(
           d => d.x == this.xi && d.y == this.yi
         )[0];
@@ -402,7 +417,7 @@ export default {
 }
 .header .complete {
   font-family: "YaHei";
-  color: #f0f;
+  color: #baec40;
 }
 .controller {
   position: fixed;
@@ -421,7 +436,7 @@ export default {
 
 .controller img {
   flex: 1;
-  height: 50%;
+  height: 25%;
 }
 
 .controller img:hover {
@@ -457,6 +472,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  font-size: 40px;
+  font-size: 28px;
 }
 </style>

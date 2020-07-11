@@ -400,7 +400,7 @@ export default [
     "arctic   adj.北极的",
     "ardent   adj.热心的，强烈的",
     "arduous   adj.艰巨的，努力的",
-    "are   v.是",
+    "are   v.是，存在",
     "area   n.地区，面积，领域",
     "arena   n.竞技场",
     "argue   v.争论，辩论",
