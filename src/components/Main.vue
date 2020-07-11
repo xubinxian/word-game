@@ -83,7 +83,8 @@ export default {
       completeWords: [],
       X: 0,
       Y: 3,
-      W: 0
+      W: 0,
+      KEYS: ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
     };
   },
   mounted() {
@@ -105,8 +106,17 @@ export default {
           let key = d.substring(0, d.indexOf("拼"));
           let value = d.substring(d.lastIndexOf("拼") + 1);
           if (key.length == 4) {
-            this.words.push(key);
-            json[key] = value;
+            let isKey;
+            for (let i = 0; i < this.KEYS.length; i++) {
+              if (key.indexOf(this.KEYS[i]) > -1) {
+                isKey = true;
+                break;
+              }
+            }
+            if (isKey) {
+              this.words.push(key);
+              json[key] = value;
+            }
           }
         });
       }
@@ -160,11 +170,11 @@ export default {
       modal.style.top = this.HEIGHT_UNIT * 6 + "px";
       modal.style.fontSize = this.HEIGHT_UNIT * 0.8 + "px";
       setTimeout(_ => {
-        this.text = 3;
+        this.text = "3";
         setTimeout(_ => {
-          this.text = 2;
+          this.text = "2";
           setTimeout(_ => {
-            this.text = 1;
+            this.text = "1";
             setTimeout(_ => {
               this.text = "开始!";
               setTimeout(() => {
@@ -276,7 +286,6 @@ export default {
         setTimeout(_ => {
           this.stage++;
           this.loadStage();
-          this.text = "";
         }, 1500);
       } else {
         this.scores[this.stage - 1] = this.score;
