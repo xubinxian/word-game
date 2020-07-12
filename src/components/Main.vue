@@ -3,6 +3,7 @@
     <div ref="header" class="header">
       <div ref="info" class="info">
         <div style="margin-left: 20px">关卡: {{stage}}</div>
+        <div v-if="letters.length" @click="tip">提示</div>
         <div style="margin-right: 20px">得分: {{score}}</div>
       </div>
       <div ref="complete" class="complete">
@@ -392,6 +393,9 @@ export default {
         this.yi++;
         this.loadData();
       }
+    },
+    tip() {
+      this.complete = this.letters[this.lettersFirstIndex - 1];
     }
   }
 };
